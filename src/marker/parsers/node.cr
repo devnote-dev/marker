@@ -1,6 +1,7 @@
 class Marker::Parser::CommonMark
   class Node
     enum Type
+      Document
       Heading
       Paragraph
       Strong
@@ -16,15 +17,11 @@ class Marker::Parser::CommonMark
     end
 
     property type : Type
-    property text : String
-    property position : Position
-    property parent : Node?
-    property previous : Node?
-    property next : Node?
+    property value : String
+    getter children : Array(Node)
 
-    def initialize(@type : Type)
-      @text = ""
-      @position = Position.new
+    def initialize(@type : Type, @value : String)
+      @children = [] of Node
     end
   end
 
