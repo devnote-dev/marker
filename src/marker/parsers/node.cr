@@ -22,7 +22,7 @@ class Marker::Parser::CommonMark
     property previous : Node?
     property next : Node?
 
-    def initialize(@type)
+    def initialize(@type : Type)
       @text = ""
       @position = Position.new
     end

@@ -27,7 +27,7 @@ class Marker::Parser::CommonMark
     property type : Type
     property value : String
 
-    def initialize(@type)
+    def initialize(@type : Type)
       @value = ""
       @pos = Position.new
     end
@@ -40,7 +40,7 @@ class Marker::Parser::CommonMark
     @line : Int32
     @token : Token
 
-    def initialize(input)
+    def initialize(input : String)
       @reader = Char::Reader.new input
       @line = 1
       @token = uninitialized Token
@@ -58,7 +58,7 @@ class Marker::Parser::CommonMark
       tokens
     end
 
-    def next_token : Nil
+    protected def next_token : Nil
       @token = Token.new :eof
       @token.pos.set_start @line, @reader.pos
 
@@ -115,7 +115,7 @@ class Marker::Parser::CommonMark
       end
     end
 
-    def consume_whitespace : Nil
+    protected def consume_whitespace : Nil
       @token.type = :whitespace
 
       while current_char == ' '
@@ -126,7 +126,7 @@ class Marker::Parser::CommonMark
       @token.value = get_text_range
     end
 
-    def consume_newline : Nil
+    protected def consume_newline : Nil
       @token.type = :newline
 
       while current_char.in? TERMINATORS
@@ -137,7 +137,7 @@ class Marker::Parser::CommonMark
       @token.pos.set_stop @line, @reader.pos
     end
 
-    def consume_header : Nil
+    protected def consume_header : Nil
       @token.type = :heading
 
       while current_char == '#'
@@ -148,7 +148,7 @@ class Marker::Parser::CommonMark
       @token.value = get_text_range
     end
 
-    def consume_code_block : Nil
+    protected def consume_code_block : Nil
       @token.type = :code_block
 
       while current_char == '`'
@@ -174,7 +174,7 @@ class Marker::Parser::CommonMark
       @token.value = get_text_range
     end
 
-    def consume_code_span : Nil
+    protected def consume_code_span : Nil
       @token.type = :code_span
       count = get_text_range.size
 
@@ -192,7 +192,7 @@ class Marker::Parser::CommonMark
       @token.value = get_text_range
     end
 
-    def consume_html : Nil
+    protected def consume_html : Nil
       @token.type = :html_block
 
       until current_char == '>'
@@ -204,7 +204,7 @@ class Marker::Parser::CommonMark
       @token.value = get_text_range
     end
 
-    def consume_list_item_or_text : Nil
+    protected def consume_list_item_or_text : Nil
       loop do
         case current_char
         when '0'..'9' then next_char
@@ -219,7 +219,7 @@ class Marker::Parser::CommonMark
       @token.value = get_text_range
     end
 
-    def consume_text : Nil
+    protected def consume_text : Nil
       @token.type = :text
 
       loop do
