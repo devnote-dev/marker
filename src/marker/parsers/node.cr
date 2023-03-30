@@ -1,4 +1,4 @@
-module Marker
+class Marker::Parser::CommonMark
   class Node
     enum Type
       Heading
