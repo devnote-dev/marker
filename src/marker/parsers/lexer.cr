@@ -1,5 +1,5 @@
 class Marker::Parser::CommonMark
-  private class Token
+  class Token
     enum Type
       Heading
       Text
