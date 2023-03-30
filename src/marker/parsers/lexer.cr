@@ -83,9 +83,9 @@ module Marker::Parser
             @token.type = :strong
             @token.pos.set_stop @line, @reader.pos
             @token.value = get_text_range
-          # Does not work, needs refining
-          # elsif char == '*' && current_char.in?('\0', '\r', '\n', ' ')
-          #   consume_list_item_or_text
+            # Does not work, needs refining
+            # elsif char == '*' && current_char.in?('\0', '\r', '\n', ' ')
+            #   consume_list_item_or_text
           else
             @token.type = :emphasis
             @token.pos.set_stop @line, @reader.pos
