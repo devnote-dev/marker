@@ -1,3 +1,5 @@
+require "string_pool"
+
 require "./marker/**"
 
 module Marker
