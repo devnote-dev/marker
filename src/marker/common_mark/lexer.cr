@@ -153,7 +153,7 @@ module Marker::CommonMark
           if next_char == '-'
             return consume_html_comment
           else
-            consume_text
+            return consume_text
           end
         when .ascii_letter?
           # this is fine

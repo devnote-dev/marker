@@ -31,13 +31,13 @@ module Marker::CommonMark
         parse_paragraph token
       when .strong?
         if next_token.kind.space?
-          parse_strong token
+          parse_strong
         else
           parse_paragraph previous_token
         end
       when .emphasis?
         if next_token.kind.space?
-          parse_emphasis token
+          parse_emphasis
         else
           parse_paragraph previous_token
         end
@@ -57,10 +57,10 @@ module Marker::CommonMark
           break
         when .heading?
           next
-        when .strong?, .emphasis?
-          node = parse_node token
-          break if node.nil?
-          value << node
+        when .strong?
+          value << parse_strong
+        when .emphasis?
+          value << parse_emphasis
         else
           value << Text.new token.value
         end
@@ -78,9 +78,9 @@ module Marker::CommonMark
         when .eof?, .newline?
           break
         when .strong?
-          value << parse_strong token
+          value << parse_strong
         when .emphasis?
-          value << parse_emphasis token
+          value << parse_emphasis
         else
           value << Text.new token.value
         end
@@ -90,43 +90,41 @@ module Marker::CommonMark
       Paragraph.new value
     end
 
-    def parse_strong(token : Token) : Node
-      token = next_token
+    def parse_strong : Node
       value = [] of Node
 
       loop do
+        token = next_token
         case token.kind
         when .eof?, .newline?
           return Paragraph.new value
         when .strong?
           break
         when .emphasis?
-          value << parse_emphasis token
+          value << parse_emphasis
         else
           value << Text.new token.value
         end
-        token = next_token
       end
 
       Strong.new value
     end
 
-    def parse_emphasis(token : Token) : Node
-      token = next_token
+    def parse_emphasis : Node
       value = [] of Node
 
       loop do
+        token = next_token
         case token.kind
         when .eof?, .newline?
           return Paragraph.new value
         when .strong?
-          value << parse_strong token
+          value << parse_strong
         when .emphasis?
           break
         else
           value << Text.new token.value
         end
-        token = next_token
       end
 
       Emphasis.new value
