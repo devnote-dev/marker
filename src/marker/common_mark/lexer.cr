@@ -32,12 +32,15 @@ module Marker::CommonMark
         Token.new :eof
       when ' '
         consume_whitespace
-      when '\r', '\n'
-        if current_char == '\r'
-          raise "expected '\\n' after '\\r'" unless next_char == '\n'
+      when '\r'
+        if next_char == '\n'
+          next_char
+          Token.new :newline
+        else
+          consume_text
         end
+      when '\n'
         next_char
-
         Token.new :newline
       when '\\'
         next_char
