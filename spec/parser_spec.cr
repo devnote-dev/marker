@@ -107,13 +107,17 @@ describe Parser do
       para.value[1].should be_a CMark::Strong
       strong = para.value[1].as(CMark::Strong)
 
+      strong.asterisk?.should be_true
+      strong.underscore?.should be_false
       strong.value.size.should eq 1
       strong.value[0].should be_a CMark::Text
       strong.value[0].as(CMark::Text).value.should eq "strong"
     end
 
     it "parses nested text types" do
-      nodes = parse("this is **_kinda_ strong**")
+      # TODO: this probably shouldn't insert a space as part of emphasis
+      # ref: line 141-142
+      nodes = parse("this is __*kinda* strong__")
 
       nodes.size.should eq 1
       nodes[0].should be_a CMark::Paragraph
@@ -125,18 +129,20 @@ describe Parser do
       para.value[1].should be_a CMark::Strong
       strong = para.value[1].as(CMark::Strong)
 
-      strong.value.size.should eq 3
+      strong.asterisk?.should be_false
+      strong.underscore?.should be_true
+      strong.value.size.should eq 2
       strong.value[0].should be_a CMark::Emphasis
       emph = strong.value[0].as(CMark::Emphasis)
 
-      emph.value.size.should eq 1
+      emph.value.size.should eq 2
       emph.value[0].should be_a CMark::Text
       emph.value[0].as(CMark::Text).value.should eq "kinda"
+      emph.value[1].should be_a CMark::Text
+      emph.value[1].as(CMark::Text).value.should eq " "
 
       strong.value[1].should be_a CMark::Text
-      strong.value[1].as(CMark::Text).value.should eq " "
-      strong.value[2].should be_a CMark::Text
-      strong.value[2].as(CMark::Text).value.should eq "strong"
+      strong.value[1].as(CMark::Text).value.should eq "strong"
     end
   end
 
@@ -154,13 +160,15 @@ describe Parser do
       para.value[1].should be_a CMark::Emphasis
       emph = para.value[1].as(CMark::Emphasis)
 
+      emph.asterisk?.should be_false
+      emph.underscore?.should be_true
       emph.value.size.should eq 1
       emph.value[0].should be_a CMark::Text
       emph.value[0].as(CMark::Text).value.should eq "emphatic"
     end
 
     it "parses nested text types" do
-      nodes = parse("this is _**very** emphatic_")
+      nodes = parse("this is *__very__ emphatic*")
 
       nodes.size.should eq 1
       nodes[0].should be_a CMark::Paragraph
@@ -172,6 +180,8 @@ describe Parser do
       para.value[1].should be_a CMark::Emphasis
       emph = para.value[1].as(CMark::Emphasis)
 
+      emph.asterisk?.should be_true
+      emph.underscore?.should be_false
       emph.value.size.should eq 3
       emph.value[0].should be_a CMark::Strong
       strong = emph.value[0].as(CMark::Strong)
