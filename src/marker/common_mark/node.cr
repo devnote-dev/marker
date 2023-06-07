@@ -2,63 +2,70 @@ module Marker::CommonMark
   abstract class Node
   end
 
-  class SyntaxTree < Node
+  class SyntaxTree
     property nodes : Array(Node)
 
     def initialize(@nodes)
     end
   end
 
-  class Heading < Node
+  class Block < Node
+  end
+
+  class Inline < Node
+  end
+
+  class Heading < Block
     property level : Int32
-    property value : Array(Node)
+    property value : Array(Inline)
 
     def initialize(@level, @value)
     end
   end
 
-  class Paragraph < Node
-    property value : Array(Node)
+  # TODO: isn't this technically a block?
+  class Paragraph < Inline
+    property value : Array(Inline)
 
     def initialize(@value)
     end
   end
 
-  class Text < Node
+  class Text < Inline
     property value : String
 
     def initialize(@value)
     end
   end
 
-  class Strong < Node
+  class Strong < Inline
     property? asterisk : Bool
     property? underscore : Bool
-    property value : Array(Node)
+    property value : Array(Inline)
 
     def initialize(@asterisk, @value)
       @underscore = !@asterisk
     end
   end
 
-  class Emphasis < Node
+  class Emphasis < Inline
     property? asterisk : Bool
     property? underscore : Bool
-    property value : Array(Node)
+    property value : Array(Inline)
 
     def initialize(@asterisk, @value)
       @underscore = !@asterisk
     end
   end
 
-  class CodeSpan < Node
+  class CodeSpan < Inline
     property value : String
 
     def initialize(@value)
     end
   end
 
-  class CodeBlock < Node
+  class CodeBlock < Inline
     enum Kind
       Backtick
       Tilde
@@ -72,15 +79,15 @@ module Marker::CommonMark
     end
   end
 
-  class BlockQuote < Node
-    property value : Array(Node)
+  class BlockQuote < Block
+    property value : Array(Inline)
 
     def initialize(@value)
     end
   end
 
-  class List < Node
-    property items : Array(Node)
+  class List < Block
+    property items : Array(Inline)
 
     def initialize(@items)
     end

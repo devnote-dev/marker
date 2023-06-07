@@ -61,7 +61,7 @@ module Marker::CommonMark
     def parse_heading(token : Token) : Node
       level = token.value.size
       token = next_token
-      value = [] of Node
+      value = [] of Inline
 
       loop do
         case token.kind
@@ -84,8 +84,8 @@ module Marker::CommonMark
       Heading.new level, value
     end
 
-    def parse_paragraph(token : Token) : Node
-      value = [] of Node
+    def parse_paragraph(token : Token) : Inline
+      value = [] of Inline
 
       loop do
         case token.kind
@@ -106,9 +106,9 @@ module Marker::CommonMark
       Paragraph.new value
     end
 
-    def parse_strong(token : Token) : Node
+    def parse_strong(token : Token) : Inline
       asterisk = token.value == "**"
-      value = [] of Node
+      value = [] of Inline
 
       loop do
         token = next_token
@@ -129,9 +129,9 @@ module Marker::CommonMark
       Strong.new asterisk, value
     end
 
-    def parse_emphasis(token : Token) : Node
+    def parse_emphasis(token : Token) : Inline
       asterisk = token.value == "*"
-      value = [] of Node
+      value = [] of Inline
 
       loop do
         token = next_token
@@ -194,7 +194,7 @@ module Marker::CommonMark
     end
 
     def parse_block_quote : Node
-      value = [] of Node
+      value = [] of Inline
       in_quote = true
 
       loop do
@@ -232,7 +232,7 @@ module Marker::CommonMark
 
     # TODO: requires delimiter context
     def parse_list : Node
-      values = [] of Node
+      values = [] of Inline
       wants_new_item = false
 
       loop do
