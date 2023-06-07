@@ -22,7 +22,7 @@ jobs:
           crystal: latest
 
       - name: Install Ameba
-        run: shards install --frozen
+        run: shards install
 
       - name: Check Format
         run: crystal tool format --check
