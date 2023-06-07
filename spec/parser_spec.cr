@@ -204,4 +204,126 @@ describe Parser do
       nodes[0].as(CMark::CodeSpan).value.should eq "this `is some` code"
     end
   end
+
+  describe CMark::CodeBlock do
+    it "parses backtick code blocks" do
+      nodes = parse <<-CODE
+        ```
+        this is
+          a big
+            code block
+        ```
+        CODE
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::CodeBlock
+      block = nodes[0].as(CMark::CodeBlock)
+
+      block.kind.should eq CMark::CodeBlock::Kind::Backtick
+      block.info.should be_nil
+      block.value.should eq <<-STR
+        this is
+          a big
+            code block
+        STR
+    end
+
+    it "parses tilde code blocks" do
+      nodes = parse <<-CODE
+        ~~~~
+          this is
+        another
+          code block
+        ~~~~
+        CODE
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::CodeBlock
+      block = nodes[0].as(CMark::CodeBlock)
+
+      block.kind.should eq CMark::CodeBlock::Kind::Tilde
+      block.info.should be_nil
+      block.value.should eq <<-STR
+          this is
+        another
+          code block
+        STR
+    end
+
+    it "parses code block info" do
+      nodes = parse <<-CODE
+        ```crystal
+        def fib(n : Int32) : Int32
+          return 1 if n <= 1
+
+          fib(n - 1) + fib(n - 2)
+        end
+        ```
+        CODE
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::CodeBlock
+      block = nodes[0].as(CMark::CodeBlock)
+
+      block.kind.should eq CMark::CodeBlock::Kind::Backtick
+      block.info.should eq "crystal"
+      block.value.should eq <<-STR
+        def fib(n : Int32) : Int32
+          return 1 if n <= 1
+
+          fib(n - 1) + fib(n - 2)
+        end
+        STR
+    end
+
+    it "parses nested code block delimiters" do
+      nodes = parse <<-CODE
+        ~~~some-str ```
+        foo bar
+        baz qux
+        ~~~
+        CODE
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::CodeBlock
+      block = nodes[0].as(CMark::CodeBlock)
+
+      block.kind.should eq CMark::CodeBlock::Kind::Tilde
+      block.info.should eq "some-str ```"
+      block.value.should eq <<-STR
+        foo bar
+        baz qux
+        STR
+    end
+
+    it "parses nested code blocks" do
+      nodes = parse <<-CODE
+        ````
+        this is
+          some crazy
+          ~~~~
+            levels of
+            code block
+          ~~~~
+        nesting
+        ````
+        CODE
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::CodeBlock
+      block = nodes[0].as(CMark::CodeBlock)
+
+      block.kind.should eq CMark::CodeBlock::Kind::Backtick
+      block.info.should be_nil
+      block.value.should eq <<-STR
+        this is
+          some crazy
+          ~~~~
+            levels of
+            code block
+          ~~~~
+        nesting
+        STR
+    end
+  end
 end

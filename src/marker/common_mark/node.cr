@@ -59,9 +59,10 @@ module Marker::CommonMark
     end
 
     property kind : Kind
+    property info : String?
     property value : String
 
-    def initialize(@kind, @value)
+    def initialize(@kind, @info, @value)
     end
   end
 

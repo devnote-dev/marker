@@ -47,6 +47,8 @@ module Marker::CommonMark
         end
       when .code_span?
         parse_code_span token
+      when .code_block?
+        parse_code_block token
       when .newline?
         parse_node next_token
       end
@@ -147,6 +149,26 @@ module Marker::CommonMark
     def parse_code_span(token : Token) : Node
       next_token
       CodeSpan.new token.value.strip '`'
+    end
+
+    def parse_code_block(token : Token) : Node
+      next_token
+
+      info : String? = nil
+      line = token.value.lines.first
+      delim = line[0]
+      value = token.value.strip(delim).strip('\n')
+      kind = delim == '`' ? CodeBlock::Kind::Backtick : CodeBlock::Kind::Tilde
+
+      unless line.ends_with? delim
+        line = line.strip delim
+        unless line.includes? delim
+          info = line
+          value = value.lstrip(info).strip('\n')
+        end
+      end
+
+      CodeBlock.new kind, info, value
     end
 
     protected def current_token : Token
