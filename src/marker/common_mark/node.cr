@@ -74,16 +74,9 @@ module Marker::CommonMark
   end
 
   class List < Node
-    property items : Array(Item)
+    property items : Array(Node)
 
     def initialize(@items)
-    end
-  end
-
-  class Item < Node
-    property value : Array(Node)
-
-    def initialize(@value)
     end
   end
 end
