@@ -186,4 +186,22 @@ describe Parser do
       emph.value[2].as(CMark::Text).value.should eq "emphatic"
     end
   end
+
+  describe CMark::CodeSpan do
+    it "parses single code spans" do
+      nodes = parse("`this is some code`")
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::CodeSpan
+      nodes[0].as(CMark::CodeSpan).value.should eq "this is some code"
+    end
+
+    it "parses double code spans" do
+      nodes = parse("``this `is some` code``")
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::CodeSpan
+      nodes[0].as(CMark::CodeSpan).value.should eq "this `is some` code"
+    end
+  end
 end

@@ -45,6 +45,8 @@ module Marker::CommonMark
         else
           parse_paragraph previous_token
         end
+      when .code_span?
+        parse_code_span token
       when .newline?
         parse_node next_token
       end
@@ -65,6 +67,8 @@ module Marker::CommonMark
           value << parse_strong
         when .emphasis?
           value << parse_emphasis
+        when .code_span?
+          value << parse_code_span token
         else
           value << Text.new token.value
         end
@@ -85,6 +89,8 @@ module Marker::CommonMark
           value << parse_strong
         when .emphasis?
           value << parse_emphasis
+        when .code_span?
+          value << parse_code_span token
         else
           value << Text.new token.value
         end
@@ -106,6 +112,8 @@ module Marker::CommonMark
           break
         when .emphasis?
           value << parse_emphasis
+        when .code_span?
+          value << parse_code_span token
         else
           value << Text.new token.value
         end
@@ -126,12 +134,19 @@ module Marker::CommonMark
           value << parse_strong
         when .emphasis?
           break
+        when .code_span?
+          value << parse_code_span token
         else
           value << Text.new token.value
         end
       end
 
       Emphasis.new value
+    end
+
+    def parse_code_span(token : Token) : Node
+      next_token
+      CodeSpan.new token.value.strip '`'
     end
 
     protected def current_token : Token
