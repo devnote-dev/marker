@@ -1,7 +1,5 @@
+# TODO: move into /common_mark/
 require "./spec_helper"
-
-alias Lexer = Marker::CommonMark::Lexer
-alias Kind = Marker::CommonMark::Token::Kind
 
 describe Lexer do
   it "parses a heading" do
