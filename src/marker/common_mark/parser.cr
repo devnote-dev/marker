@@ -35,13 +35,13 @@ module Marker::CommonMark
         parse_paragraph token
       when .strong?
         if next_token.kind.space?
-          parse_strong
+          parse_strong token
         else
           parse_paragraph previous_token
         end
       when .emphasis?
         if next_token.kind.space?
-          parse_emphasis
+          parse_emphasis token
         else
           parse_paragraph previous_token
         end
@@ -70,9 +70,9 @@ module Marker::CommonMark
         when .heading?
           next
         when .strong?
-          value << parse_strong
+          value << parse_strong token
         when .emphasis?
-          value << parse_emphasis
+          value << parse_emphasis token
         when .code_span?
           value << parse_code_span token
         else
@@ -92,9 +92,9 @@ module Marker::CommonMark
         when .eof?, .newline?
           break
         when .strong?
-          value << parse_strong
+          value << parse_strong token
         when .emphasis?
-          value << parse_emphasis
+          value << parse_emphasis token
         when .code_span?
           value << parse_code_span token
         else
@@ -106,7 +106,8 @@ module Marker::CommonMark
       Paragraph.new value
     end
 
-    def parse_strong : Node
+    def parse_strong(token : Token) : Node
+      asterisk = token.value == "**"
       value = [] of Node
 
       loop do
@@ -117,7 +118,7 @@ module Marker::CommonMark
         when .strong?
           break
         when .emphasis?
-          value << parse_emphasis
+          value << parse_emphasis token
         when .code_span?
           value << parse_code_span token
         else
@@ -125,10 +126,11 @@ module Marker::CommonMark
         end
       end
 
-      Strong.new value
+      Strong.new asterisk, value
     end
 
-    def parse_emphasis : Node
+    def parse_emphasis(token : Token) : Node
+      asterisk = token.value == "*"
       value = [] of Node
 
       loop do
@@ -137,17 +139,33 @@ module Marker::CommonMark
         when .eof?, .newline?
           return Paragraph.new value
         when .strong?
-          value << parse_strong
+          value << parse_strong token
         when .emphasis?
           break
         when .code_span?
           value << parse_code_span token
+        when .list_item?
+          if asterisk
+            if token.value == "* "
+              value << Text.new " "
+              break
+            else
+              value << Text.new token.value
+            end
+          else
+            if token.value == "_ "
+              value << Text.new " "
+              break
+            else
+              value << Text.new token.value
+            end
+          end
         else
           value << Text.new token.value
         end
       end
 
-      Emphasis.new value
+      Emphasis.new asterisk, value
     end
 
     def parse_code_span(token : Token) : Node
@@ -194,9 +212,9 @@ module Marker::CommonMark
           in_quote = true
           next
         when .strong?
-          value << parse_strong
+          value << parse_strong token
         when .emphasis?
-          value << parse_emphasis
+          value << parse_emphasis token
         when .code_span?
           value << parse_code_span token
         else
@@ -235,9 +253,9 @@ module Marker::CommonMark
           break if wants_new_item
           case token.kind
           when .strong?
-            values << parse_strong
+            values << parse_strong token
           when .emphasis?
-            values << parse_emphasis
+            values << parse_emphasis token
           when .code_span?
             values << parse_code_span token
           when .list_item?

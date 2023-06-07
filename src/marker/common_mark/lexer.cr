@@ -51,19 +51,19 @@ module Marker::CommonMark
         case next_char
         when '*'
           next_char
-          Token.new :strong
+          Token.new :strong, get_text_range
         when ' '
           next_char
-          Token.new :list_item
+          Token.new :list_item, get_text_range
         else
-          Token.new :emphasis
+          Token.new :emphasis, get_text_range
         end
       when '_'
         if next_char == '_'
           next_char
-          Token.new :strong
+          Token.new :strong, get_text_range
         else
-          Token.new :emphasis
+          Token.new :emphasis, get_text_range
         end
       when '`'
         if next_char == '`' && next_char == '`'

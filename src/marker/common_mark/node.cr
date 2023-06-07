@@ -32,16 +32,22 @@ module Marker::CommonMark
   end
 
   class Strong < Node
+    property? asterisk : Bool
+    property? underscore : Bool
     property value : Array(Node)
 
-    def initialize(@value)
+    def initialize(@asterisk, @value)
+      @underscore = !@asterisk
     end
   end
 
   class Emphasis < Node
+    property? asterisk : Bool
+    property? underscore : Bool
     property value : Array(Node)
 
-    def initialize(@value)
+    def initialize(@asterisk, @value)
+      @underscore = !@asterisk
     end
   end
 
