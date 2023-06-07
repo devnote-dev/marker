@@ -59,4 +59,37 @@ describe Parser do
       para.value[2].as(CMark::Text).value.should eq "something"
     end
   end
+
+  describe CMark::Paragraph do
+    it "parses single paragraphs" do
+      nodes = parse("foo bar baz")
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::Paragraph
+      para = nodes[0].as(CMark::Paragraph)
+
+      para.value.size.should eq 1
+      para.value[0].should be_a CMark::Text
+      para.value[0].as(CMark::Text).value.should eq "foo bar baz"
+    end
+
+    it "parses multiline paragraphs" do
+      nodes = parse("maybe a paragraph\non two lines")
+
+      nodes.size.should eq 2
+      nodes[0].should be_a CMark::Paragraph
+      para = nodes[0].as(CMark::Paragraph)
+
+      para.value.size.should eq 1
+      para.value[0].should be_a CMark::Text
+      para.value[0].as(CMark::Text).value.should eq "maybe a paragraph"
+
+      nodes[1].should be_a CMark::Paragraph
+      para = nodes[1].as(CMark::Paragraph)
+
+      para.value.size.should eq 1
+      para.value[0].should be_a CMark::Text
+      para.value[0].as(CMark::Text).value.should eq "on two lines"
+    end
+  end
 end
