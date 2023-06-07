@@ -49,6 +49,8 @@ module Marker::CommonMark
         parse_code_span token
       when .code_block?
         parse_code_block token
+      when .block_quote?
+        parse_block_quote
       when .newline?
         parse_node next_token
       end
@@ -169,6 +171,43 @@ module Marker::CommonMark
       end
 
       CodeBlock.new kind, info, value
+    end
+
+    def parse_block_quote : Node
+      value = [] of Node
+      in_quote = true
+
+      loop do
+        token = next_token
+        case token.kind
+        when .eof?
+          break
+        when .newline?
+          break unless in_quote
+          in_quote = false
+          next
+        when .space?
+          next
+        when .block_quote?
+          in_quote = true
+          next
+        when .strong?
+          value << parse_strong
+        when .emphasis?
+          value << parse_emphasis
+        when .code_span?
+          value << parse_code_span token
+        else
+          value << Text.new token.value
+        end
+
+        unless in_quote
+          next_token
+          break
+        end
+      end
+
+      BlockQuote.new value
     end
 
     protected def current_token : Token

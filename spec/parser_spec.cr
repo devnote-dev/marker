@@ -326,4 +326,64 @@ describe Parser do
         STR
     end
   end
+
+  describe CMark::BlockQuote do
+    it "parses block quotes" do
+      nodes = parse <<-QUOTE
+        > foo bar
+        > baz qux
+        QUOTE
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::BlockQuote
+      quote = nodes[0].as(CMark::BlockQuote)
+
+      quote.value.size.should eq 2
+      quote.value[0].should be_a CMark::Text
+      quote.value[0].as(CMark::Text).value.should eq "foo bar"
+      quote.value[1].should be_a CMark::Text
+      quote.value[1].as(CMark::Text).value.should eq "baz qux"
+    end
+
+    it "parses indented block quotes" do
+      nodes = parse <<-QUOTE
+        >   foo bar
+        >          baz qux
+        QUOTE
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::BlockQuote
+      quote = nodes[0].as(CMark::BlockQuote)
+
+      quote.value.size.should eq 2
+      quote.value[0].should be_a CMark::Text
+      quote.value[0].as(CMark::Text).value.should eq "foo bar"
+      quote.value[1].should be_a CMark::Text
+      quote.value[1].as(CMark::Text).value.should eq "baz qux"
+    end
+
+    it "parses lazy block quote values" do
+      nodes = parse <<-QUOTE
+        > foo bar
+            baz qux
+        asdf
+        QUOTE
+
+      nodes.size.should eq 2
+      nodes[0].should be_a CMark::BlockQuote
+      quote = nodes[0].as(CMark::BlockQuote)
+
+      quote.value.size.should eq 2
+      quote.value[0].should be_a CMark::Text
+      quote.value[0].as(CMark::Text).value.should eq "foo bar"
+      quote.value[1].should be_a CMark::Text
+      quote.value[1].as(CMark::Text).value.should eq "baz qux"
+
+      nodes[1].should be_a CMark::Paragraph
+      para = nodes[1].as(CMark::Paragraph)
+
+      para.value[0].should be_a CMark::Text
+      para.value[0].as(CMark::Text).value.should eq "asdf"
+    end
+  end
 end
