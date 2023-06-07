@@ -32,14 +32,14 @@ module Marker::CommonMark
   end
 
   class Strong < Node
-    property value : String
+    property value : Array(Node)
 
     def initialize(@value)
     end
   end
 
   class Emphasis < Node
-    property value : String
+    property value : Array(Node)
 
     def initialize(@value)
     end
