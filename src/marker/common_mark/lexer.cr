@@ -81,10 +81,10 @@ module Marker::CommonMark
         consume_html_or_text
       when '>'
         next_char
-        Token.new :block_quote
+        Token.new :block_quote, get_text_range
       when '-', '+'
         next_char
-        Token.new :list_item
+        Token.new :list_item, get_text_range
       when .ascii_number?
         if current_char == '0'
           consume_text
