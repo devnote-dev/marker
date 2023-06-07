@@ -23,7 +23,11 @@ module Marker::CommonMark
       case token.kind
       when .heading?
         if next_token.kind.space?
-          parse_heading token
+          if token.value.size > 5
+            parse_paragraph previous_token
+          else
+            parse_heading token
+          end
         else
           parse_paragraph previous_token
         end
