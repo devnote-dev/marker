@@ -87,9 +87,10 @@ module Marker::CommonMark
   end
 
   class List < Block
-    property items : Array(Inline)
+    property items : Array(Node)
+    property? ordered : Bool
 
-    def initialize(@items)
+    def initialize(@items, @ordered)
     end
   end
 end

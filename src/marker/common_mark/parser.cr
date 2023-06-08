@@ -51,8 +51,8 @@ module Marker::CommonMark
         parse_code_block token
       when .block_quote?
         parse_block_quote
-        # when .list_item?
-        #   parse_list
+      when .list_item?
+        parse_list token
       when .newline?
         parse_node next_token
       end
@@ -230,9 +230,22 @@ module Marker::CommonMark
       BlockQuote.new value
     end
 
-    # TODO: requires delimiter context
-    def parse_list : Node
-      values = [] of Inline
+    def parse_list(token : Token) : Node
+      if token.value.in?("* ", "-", "+")
+        parse_unordered_list token
+      else
+        parse_ordered_list token
+      end
+    end
+
+    def parse_ordered_list(token : Token) : Node
+      # TODO
+      List.new([] of Node, true)
+    end
+
+    def parse_unordered_list(token : Token) : Node
+      delim = token.value
+      values = [] of Node
       wants_new_item = false
 
       loop do
@@ -249,24 +262,19 @@ module Marker::CommonMark
           end
         when .list_item?
           wants_new_item = false
+          unless token.value == delim
+            values << parse_list token
+          end
         else
           break if wants_new_item
-          case token.kind
-          when .strong?
-            values << parse_strong token
-          when .emphasis?
-            values << parse_emphasis token
-          when .code_span?
-            values << parse_code_span token
-          when .list_item?
-            values << parse_list
-          else
-            values << Text.new token.value
-          end
+          node = parse_node token
+          break if node.nil?
+          values << node
+          break if current_token.kind.eof?
         end
       end
 
-      List.new values
+      List.new values, false
     end
 
     protected def current_token : Token
