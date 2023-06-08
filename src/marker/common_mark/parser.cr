@@ -107,7 +107,7 @@ module Marker::CommonMark
     end
 
     def parse_strong(token : Token) : Inline
-      asterisk = token.value == "**"
+      kind = token.value == "**" ? Strong::Kind::Asterisk : Strong::Kind::Underscore
       value = [] of Inline
 
       loop do
@@ -126,11 +126,11 @@ module Marker::CommonMark
         end
       end
 
-      Strong.new asterisk, value
+      Strong.new kind, value
     end
 
     def parse_emphasis(token : Token) : Inline
-      asterisk = token.value == "*"
+      kind = token.value == "*" ? Emphasis::Kind::Asterisk : Emphasis::Kind::Underscore
       value = [] of Inline
 
       loop do
@@ -145,7 +145,7 @@ module Marker::CommonMark
         when .code_span?
           value << parse_code_span token
         when .list_item?
-          if asterisk
+          if kind.asterisk?
             if token.value == "* "
               value << Text.new " "
               break
@@ -165,7 +165,7 @@ module Marker::CommonMark
         end
       end
 
-      Emphasis.new asterisk, value
+      Emphasis.new kind, value
     end
 
     def parse_code_span(token : Token) : Node

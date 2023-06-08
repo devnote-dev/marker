@@ -39,22 +39,28 @@ module Marker::CommonMark
   end
 
   class Strong < Inline
-    property? asterisk : Bool
-    property? underscore : Bool
+    enum Kind
+      Asterisk
+      Underscore
+    end
+
+    property kind : Kind
     property value : Array(Inline)
 
-    def initialize(@asterisk, @value)
-      @underscore = !@asterisk
+    def initialize(@kind, @value)
     end
   end
 
   class Emphasis < Inline
-    property? asterisk : Bool
-    property? underscore : Bool
+    enum Kind
+      Asterisk
+      Underscore
+    end
+
+    property kind : Kind
     property value : Array(Inline)
 
-    def initialize(@asterisk, @value)
-      @underscore = !@asterisk
+    def initialize(@kind, @value)
     end
   end
 

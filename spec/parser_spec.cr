@@ -107,8 +107,7 @@ describe Parser do
       para.value[1].should be_a CMark::Strong
       strong = para.value[1].as(CMark::Strong)
 
-      strong.asterisk?.should be_true
-      strong.underscore?.should be_false
+      strong.kind.should eq CMark::Strong::Kind::Asterisk
       strong.value.size.should eq 1
       strong.value[0].should be_a CMark::Text
       strong.value[0].as(CMark::Text).value.should eq "strong"
@@ -129,8 +128,7 @@ describe Parser do
       para.value[1].should be_a CMark::Strong
       strong = para.value[1].as(CMark::Strong)
 
-      strong.asterisk?.should be_false
-      strong.underscore?.should be_true
+      strong.kind.should eq CMark::Strong::Kind::Underscore
       strong.value.size.should eq 2
       strong.value[0].should be_a CMark::Emphasis
       emph = strong.value[0].as(CMark::Emphasis)
@@ -160,8 +158,7 @@ describe Parser do
       para.value[1].should be_a CMark::Emphasis
       emph = para.value[1].as(CMark::Emphasis)
 
-      emph.asterisk?.should be_false
-      emph.underscore?.should be_true
+      emph.kind.should eq CMark::Emphasis::Kind::Underscore
       emph.value.size.should eq 1
       emph.value[0].should be_a CMark::Text
       emph.value[0].as(CMark::Text).value.should eq "emphatic"
@@ -180,8 +177,7 @@ describe Parser do
       para.value[1].should be_a CMark::Emphasis
       emph = para.value[1].as(CMark::Emphasis)
 
-      emph.asterisk?.should be_true
-      emph.underscore?.should be_false
+      emph.kind.should eq CMark::Emphasis::Kind::Asterisk
       emph.value.size.should eq 3
       emph.value[0].should be_a CMark::Strong
       strong = emph.value[0].as(CMark::Strong)
