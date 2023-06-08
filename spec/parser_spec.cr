@@ -407,7 +407,7 @@ describe Parser do
       nodes.size.should eq 1
       nodes[0].should be_a CMark::List
       list = nodes[0].as(CMark::List)
-      
+
       list.ordered?.should be_false
       list.items.size.should eq 2
       list.items[0].should be_a CMark::Paragraph
