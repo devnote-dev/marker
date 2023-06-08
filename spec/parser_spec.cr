@@ -396,4 +396,26 @@ describe Parser do
       para.value[0].as(CMark::Text).value.should eq "asdf"
     end
   end
+
+  describe CMark::List do
+    it "parses loose lists" do
+      nodes = parse <<-LIST
+        - this is
+        - a list
+        LIST
+
+      nodes.size.should eq 1
+      nodes[0].should be_a CMark::List
+      list = nodes[0].as(CMark::List)
+      
+      list.ordered?.should be_false
+      list.items.size.should eq 2
+      list.items[0].should be_a CMark::Paragraph
+      list.items[0].as(CMark::Paragraph).value[0].should be_a CMark::Text
+      list.items[0].as(CMark::Paragraph).value[0].as(CMark::Text).value.should eq "this is"
+      list.items[1].should be_a CMark::Paragraph
+      list.items[1].as(CMark::Paragraph).value[0].should be_a CMark::Text
+      list.items[1].as(CMark::Paragraph).value[0].as(CMark::Text).value.should eq "a list"
+    end
+  end
 end
