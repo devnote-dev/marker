@@ -1,27 +1,30 @@
 module Marker
   class Parser
     @tokens : Array(Token)
-    @pos : Int32
+    @pos : Int32 = 0
 
-    def initialize(@tokens : Array(Token))
-      @pos = 0
+    def self.parse(tokens : Array(Token)) : SyntaxTree
+      new(tokens).parse
+    end
+
+    private def initialize(@tokens : Array(Token))
     end
 
     def parse : SyntaxTree
       nodes = [] of Node
 
       loop do
-        node = parse_node current_token
-        break if node.nil?
+        break unless node = parse current_token
         nodes << node
       end
 
       SyntaxTree.new nodes
     end
 
-    def parse_node(token : Token) : Node?
+    def parse(token : Token) : Node?
       case token.kind
       when .heading?
+        # TODO: figure out this weirdness
         if next_token.kind.space?
           if token.value.size > 5
             parse_paragraph previous_token
@@ -54,7 +57,7 @@ module Marker
       when .list_item?
         parse_list token
       when .newline?
-        parse_node next_token
+        parse next_token
       end
     end
 
@@ -267,7 +270,7 @@ module Marker
           end
         else
           break if wants_new_item
-          node = parse_node token
+          node = parse token
           break if node.nil?
           values << node
           break if current_token.kind.eof?

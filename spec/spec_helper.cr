@@ -7,7 +7,7 @@ alias Parser = Marker::Parser
 
 def parse(input : String) : Array(Marker::Node)
   tokens = Lexer.new(input).run
-  tree = Parser.new(tokens).parse
+  tree = Parser.parse tokens
 
   tree.nodes
 end
