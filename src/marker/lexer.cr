@@ -1,4 +1,4 @@
-module Marker::CommonMark
+module Marker
   class Lexer
     TERMINATORS = {'\0', '\r', '\n'}
 

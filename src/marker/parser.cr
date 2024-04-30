@@ -1,4 +1,4 @@
-module Marker::CommonMark
+module Marker
   class Parser
     @tokens : Array(Token)
     @pos : Int32

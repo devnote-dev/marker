@@ -1,4 +1,3 @@
-# TODO: move into /common_mark/
 require "./spec_helper"
 
 describe Lexer do

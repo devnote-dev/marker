@@ -1,4 +1,4 @@
-module Marker::CommonMark
+module Marker
   abstract class Node
   end
 

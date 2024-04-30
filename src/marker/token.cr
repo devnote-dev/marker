@@ -1,4 +1,4 @@
-module Marker::CommonMark
+module Marker
   # class Location
   #   @loc : StaticArray(Int32, 4)
   #

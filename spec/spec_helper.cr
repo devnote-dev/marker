@@ -1,12 +1,11 @@
 require "spec"
 require "../src/marker"
 
-alias CMark = Marker::CommonMark
-alias Kind = CMark::Token::Kind
-alias Lexer = CMark::Lexer
-alias Parser = CMark::Parser
+alias Kind = Marker::Token::Kind
+alias Lexer = Marker::Lexer
+alias Parser = Marker::Parser
 
-def parse(input : String) : Array(CMark::Node)
+def parse(input : String) : Array(Marker::Node)
   tokens = Lexer.new(input).run
   tree = Parser.new(tokens).parse
 
