@@ -1,237 +1,331 @@
 module Marker
   class Lexer
-    TERMINATORS = {'\0', '\r', '\n'}
-
     @reader : Char::Reader
     @pool : StringPool
-    @start : Int32
+    @line : Int32
+    @column : Int32
+    @loc : Location
 
-    def initialize(input : String)
-      @reader = Char::Reader.new input
-      @pool = StringPool.new
-      @start = 0
+    def self.lex(source : String) : Array(Token)
+      new(source).lex
     end
 
-    def run : Array(Token)
+    private def initialize(source : String)
+      @reader = Char::Reader.new source
+      @pool = StringPool.new
+      @line = @column = 0
+      @loc = Location[0, 0]
+    end
+
+    def lex : Array(Token)
       tokens = [] of Token
 
       loop do
-        token = next_token
-        tokens << token
+        tokens << (token = lex_next_token)
         break if token.kind.eof?
       end
 
       tokens
     end
 
-    def next_token : Token
-      @start = @reader.pos
-
+    private def lex_next_token : Token
       case current_char
       when '\0'
-        Token.new :eof
+        Token.new :eof, location
       when ' '
-        consume_whitespace
-      when '\r'
-        if next_char == '\n'
-          next_char
-          Token.new :newline
-        else
-          consume_text
-        end
-      when '\n'
-        next_char
-        Token.new :newline
+        lex_space
+      when '\r', '\n'
+        lex_newline
       when '\\'
         next_char
-        Token.new :escape
+        Token.new :escape, location, "\\"
       when '#'
-        consume_heading
-      when '*'
-        case next_char
-        when '*'
-          next_char
-          Token.new :strong, get_text_range
-        when ' '
-          next_char
-          Token.new :list_item, get_text_range
+        lex_atx_heading
+      when '='
+        start = current_pos
+        if next_char == '=' && next_char == '='
+          lex_setext_heading start
         else
-          Token.new :emphasis, get_text_range
-        end
-      when '_'
-        if next_char == '_'
-          next_char
-          Token.new :strong, get_text_range
-        else
-          Token.new :emphasis, get_text_range
+          rewind start + 1
+          Token.new :equal, location, "="
         end
       when '`'
-        if next_char == '`' && next_char == '`'
-          consume_code_block
+        start = current_pos
+        if next_char == '`'
+          if next_char == '`'
+            lex_fence_block start
+          else
+            rewind
+            lex_code_span start, 2
+          end
         else
-          consume_code_span
+          rewind
+          lex_code_span start, 1
         end
       when '~'
+        start = current_pos
         if next_char == '~' && next_char == '~'
-          consume_code_block
+          lex_fence_block start
         else
-          consume_text
+          rewind start + 1
+          Token.new :tilde, location, "~"
         end
       when '<'
-        consume_html_or_text
+        if next_char == '!'
+          if next_char == '-'
+            if next_char == '-'
+              next_char
+              Token.new :html_open_comment, location, "<!--"
+            else
+              rewind current_pos - 1
+              Token.new :text, location, "<!-"
+            end
+          else
+            Token.new :html_directive, location, "<!"
+          end
+        else
+          Token.new :left_angle, location, "<"
+        end
+      when '-'
+        start = current_pos
+        if next_char == '-'
+          case next_char
+          when '-'
+            lex_thematic_break start
+          when '>'
+            next_char
+            Token.new :html_close_comment, location, "-->"
+          else
+            rewind start + 1
+            Token.new :list_item, location, "-"
+          end
+        else
+          rewind start + 1
+          Token.new :list_item, location, "-"
+        end
+      when '/'
+        if next_char == '>'
+          next_char
+          Token.new :html_close_tag, location, "/>"
+        else
+          Token.new :text, location, "/"
+        end
+      when '*'
+        start = current_pos
+        if next_char == '*'
+          if next_char == '*'
+            lex_thematic_break start
+          else
+            rewind start + 1
+            Token.new :asterisk, location, "*"
+          end
+        else
+          rewind start + 1
+          Token.new :asterisk, location, "*"
+        end
+      when '.'
+        next_char
+        Token.new :period, location, "."
+      when '_'
+        start = current_pos
+        if next_char == '_'
+          if next_char == '_'
+            lex_thematic_break start
+          else
+            rewind start + 1
+            Token.new :underscore, location, "_"
+          end
+        else
+          rewind start + 1
+          Token.new :underscore, location, "_"
+        end
+      when '['
+        next_char
+        Token.new :left_bracket, location, "["
+      when ']'
+        next_char
+        Token.new :right_bracket, location, "]"
+      when '('
+        next_char
+        Token.new :left_paren, location, "("
+      when ')'
+        next_char
+        Token.new :right_paren, location, ")"
       when '>'
         next_char
-        Token.new :block_quote, get_text_range
-      when '-', '+'
+        Token.new :right_angle, location, ">"
+      when '"', '\''
         next_char
-        Token.new :list_item, get_text_range
-      when .ascii_number?
-        if current_char == '0'
-          consume_text
-        else
-          consume_list_item
-        end
+        Token.new :quote, location, current_char.to_s
+      when ':'
+        next_char
+        Token.new :colon, location, ":"
+      when '!'
+        next_char
+        Token.new :bang, location, "!"
       else
-        consume_text
+        lex_text
       end
     end
 
-    def consume_whitespace : Token
+    private def current_char : Char
+      @reader.current_char
+    end
+
+    private def next_char : Char
+      @column += 1
+      @reader.next_char
+    end
+
+    private def current_pos : Int32
+      @reader.pos
+    end
+
+    private def rewind(pos : Int32 = 1) : Nil
+      @column -= pos
+      @reader.pos = pos
+    end
+
+    private def location : Location
+      loc = @loc.end_at(@line, @column).dup
+      @loc.start_at(@line, @column)
+      loc
+    end
+
+    private def read_string_from(start : Int32) : String
+      @pool.get Slice.new(@reader.string.to_unsafe, @reader.pos - start)
+    end
+
+    private def lex_space : Token
+      start = current_pos
+
       while current_char == ' '
         next_char
       end
 
-      Token.new :space, get_text_range
+      Token.new :space, location, read_string_from start
     end
 
-    def consume_heading : Token
+    private def lex_newline : Token
+      start = current_pos
+
+      loop do
+        case current_char
+        when '\r'
+          next_char
+        when '\n'
+          @line += 1
+          @column = 0
+          next_char
+        else
+          break
+        end
+      end
+
+      Token.new :newline, location, read_string_from start
+    end
+
+    private def lex_atx_heading : Token
+      start = current_pos
+
       while current_char == '#'
         next_char
       end
 
-      Token.new :heading, get_text_range
-    end
-
-    def consume_code_block : Token
-      delim = current_char
-      while current_char == delim
-        next_char
-      end
-
-      count = get_text_range.size
-      loop do
-        break if current_char == '\0'
-        if current_char == delim
-          nth = 1
-          count.times do
-            nth += 1 if next_char == delim
-            break if nth == count
-          end
-        end
-        next_char
-      end
-
-      Token.new :code_block, get_text_range
-    end
-
-    def consume_code_span : Token
-      count = get_text_range.size
-      loop do
-        break if current_char == '\0'
-        if current_char == '`'
-          break if count == 1 || next_char == '`'
-        end
-        next_char
-      end
-      next_char
-
-      Token.new :code_span, get_text_range
-    end
-
-    def consume_html_or_text : Token
-      case next_char
-      when '!'
-        case next_char
-        when '-'
-          if next_char == '-'
-            return consume_html_comment
-          else
-            return consume_text
-          end
-        when .ascii_letter?
-          # this is fine
+      value = read_string_from start
+      if current_char == ' '
+        if value.size > 6
+          Token.new :text, location, value
         else
-          return consume_text
+          Token.new :atx_heading, location, value
         end
-      when '/'
-        return consume_text unless next_char.ascii_letter?
-      when .ascii_letter?
-        # this is fine
       else
-        return consume_text
+        Token.new :text, location, value
       end
-
-      loop do
-        raise "unterminated HTML block" if current_char == '\0'
-        break if current_char == '>'
-        next_char
-      end
-      next_char
-
-      Token.new :html_block, get_text_range
     end
 
-    def consume_html_comment : Token
-      loop do
-        raise "unterminated HTML comment block" if current_char == '\0'
-        if current_char == '-'
-          if next_char == '-' && next_char == '>'
-            break
-          end
-        end
+    private def lex_setext_heading(start : Int32) : Token
+      while current_char == '='
         next_char
       end
 
-      Token.new :html_block, get_text_range
+      Token.new :setext_heading, location, read_string_from start
     end
 
-    def consume_list_item : Token
+    private def lex_fence_block(start : Int32) : Token
+      char = current_char
+
       loop do
         case current_char
-        when .ascii_number?
+        when '\0'
+          break
+        when char
           next_char
-        when '.', ')'
-          next_char
-          break Token.new :list_item, get_text_range
         else
-          break Token.new :text, get_text_range
+          break
         end
       end
+
+      count = read_string_from(start).size
+
+      loop do
+        case current_char
+        when '\0'
+          break
+        when char
+          stop = true
+          count.times do
+            if next_char == char
+              next
+            else
+              stop = false
+              break
+            end
+          end
+          break if stop
+        else
+          next_char
+        end
+      end
+
+      Token.new :fence_block, location, read_string_from start
     end
 
-    def consume_text : Token
+    private def lex_code_span(start : Int32, level : Int32) : Token
       loop do
-        break if current_char.in? TERMINATORS
-        break if current_char.in?('\\', '#', '*', '_', '`', '~', '<', '>', '-', '+')
+        case current_char
+        when '\0'
+          break
+        when '`'
+          if level == 1 || next_char == '`'
+            break next_char
+          end
+        else
+          next_char
+        end
+      end
+
+      Token.new :code_span, location, read_string_from start
+    end
+
+    private def lex_thematic_break(start : Int32) : Token
+      char = current_char
+
+      while current_char == char
         next_char
       end
 
-      Token.new :text, get_text_range
+      Token.new :thematic_break, location, read_string_from start
     end
 
-    protected def current_char : Char
-      @reader.current_char
-    end
+    private def lex_text : Token
+      start = current_pos
 
-    protected def next_char : Char
-      @reader.next_char
-    end
+      until current_char.in?('\0', '\r', '\n', '\\', '`', '~', '<', '*', '_', '[', '!')
+        next_char
+      end
 
-    protected def get_text_range : String
-      stop = @reader.pos - @start
-      slice = Slice.new(@reader.string.to_unsafe + @start, stop)
-
-      @pool.get slice
+      Token.new :text, location, read_string_from start
     end
   end
 end
