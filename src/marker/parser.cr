@@ -54,8 +54,13 @@ module Marker
         end
 
         parse_indented_code_block
+      when .newline?
+        next_token
+        return parse_leaf_block
+      when .thematic_break?
+        parse_thematic_break
       else
-        raise "leaf not implemented"
+        raise "leaf not implemented (on #{current_token.kind})"
       end
     end
 
@@ -110,6 +115,22 @@ module Marker
       end
 
       CodeBlock.new :indent, values[..last_value_index].join.strip '\n'
+    end
+
+    private def parse_thematic_break : Block
+      token = current_token
+      next_token
+
+      case token.value
+      when .includes? '*'
+        kind = ThematicBreak::Kind::Asterisk
+      when .includes? '-'
+        kind = ThematicBreak::Kind::Dash
+      else
+        kind = ThematicBreak::Kind::Underscore
+      end
+
+      ThematicBreak.new kind, token.value.size
     end
   end
 end
