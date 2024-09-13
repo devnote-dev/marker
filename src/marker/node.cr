@@ -33,7 +33,7 @@ module Marker
 
   class Heading < Leaf
     enum Kind
-      AXT
+      ATX
       Setext
     end
 

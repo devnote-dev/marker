@@ -59,6 +59,8 @@ module Marker
         return parse_leaf_block
       when .thematic_break?
         parse_thematic_break
+      when .atx_heading?
+        parse_atx_heading
       else
         raise "leaf not implemented (on #{current_token.kind})"
       end
@@ -131,6 +133,36 @@ module Marker
       end
 
       ThematicBreak.new kind, token.value.size
+    end
+
+    private def parse_atx_heading : Block
+      level = current_token.value.size
+      next_token
+      values = parse_inlines.tap(&.shift)
+
+      if text = values[-1].as?(Text)
+        text.value = text.value.sub(/(?<![^\s])#+\s*$/, "").strip
+      end
+
+      Heading.new :atx, level, values
+    end
+
+    private def parse_inlines : Array(Inline)
+      values = [] of Inline
+
+      loop do
+        case current_token.kind
+        when .eof?, .newline?
+          break
+        when .space?, .text?
+          values << Text.new current_token.value
+          next_token
+        else
+          raise "inline not implemented (on #{current_token.kind})"
+        end
+      end
+
+      values
     end
   end
 end
