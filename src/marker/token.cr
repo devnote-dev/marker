@@ -3,7 +3,7 @@ module Marker
     @value : StaticArray(Int32, 4)
 
     def self.[](line : Int32, column : Int32)
-      new StaticArray[linel, column, line, column]
+      new StaticArray[line, column, line, column]
     end
 
     def initialize(@value : StaticArray(Int32, 4))
@@ -41,37 +41,32 @@ module Marker
       EOF
       Space
       Newline
-      Escape
 
-      # Leaf block tokens
-
-      ThematicBreak     # (?<!\s{4})(-|_|\*)(?:\1|\s){2,}$
-      ATXHeading        # (?<!\s{4})(#{1,6}(?<!#{7}))\s+.+$
-      SetextHeading     # (?<!\s{4})===+$
-      IndentedCodeBlock # \s{4,}.*$
-      FencedCodeBlock   # (?<!\s{4})(`|~)\1{2,}.*$
-      HTMLBlock         # </> <!-- -->
-
-      # Container block tokens
-
-      BlockQuote      # >
-      BulletListItem  # - or + or *
-      OrderedListItem # 0-9. or 0-9)
-
-      # Inline tokens
-
-      Backtick     # `
-      Asterisk     # *
-      Underscore   # _
-      LeftBracket  # [
-      RightBracket # ]
-      LeftParen    # (
-      RightParen   # )
-      LeftAngle    # <
-      RightAngle   # >
-      Quote        # "" or ''
-      Colon        # :
-      Bang         # !
+      Escape           # \
+      ThematicBreak    # --- or ___ or ***
+      ATXHeading       # #
+      SetextHeading    # ===
+      FenceBlock       # ``` or ~~~
+      HTMLDirective    # <!
+      HTMLOpenComment  # <!--
+      HTMLCloseComment # -->
+      HTMLCloseTag     # />
+      Equal            # =
+      ListItem         # -
+      Period           # .
+      CodeSpan         # `
+      Tilde            # ~
+      Asterisk         # *
+      Underscore       # _
+      LeftBracket      # [
+      RightBracket     # ]
+      LeftParen        # (
+      RightParen       # )
+      LeftAngle        # <
+      RightAngle       # >
+      Quote            # "" or ''
+      Colon            # :
+      Bang             # !
       Text
     end
 
