@@ -193,7 +193,7 @@ module Marker
     end
 
     private def read_string_from(start : Int32) : String
-      @pool.get Slice.new(@reader.string.to_unsafe, @reader.pos - start)
+      @pool.get Slice.new(@reader.string.to_unsafe + start, @reader.pos - start)
     end
 
     private def lex_space : Token
