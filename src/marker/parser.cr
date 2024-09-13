@@ -56,11 +56,13 @@ module Marker
         parse_indented_code_block
       when .newline?
         next_token
-        return parse_leaf_block
+        parse_leaf_block
       when .thematic_break?
         parse_thematic_break
       when .atx_heading?
         parse_atx_heading
+      when .fence_block?
+        parse_fenced_code_block
       else
         raise "leaf not implemented (on #{current_token.kind})"
       end
@@ -145,6 +147,30 @@ module Marker
       end
 
       Heading.new :atx, level, values
+    end
+
+    private def parse_fenced_code_block : Block
+      value = current_token.value
+      next_token
+
+      char = value[0]
+      kind = char == '`' ? CodeBlock::Kind::Backtick : CodeBlock::Kind::Tilde
+
+      opening = String.build do |io|
+        value.each_char do |c|
+          c == char ? (io << c) : break
+        end
+      end
+
+      unless value == opening
+        value = value[opening.size..]
+      end
+
+      if value.ends_with? opening
+        value = value.rstrip char
+      end
+
+      CodeBlock.new kind, value
     end
 
     private def parse_inlines : Array(Inline)
