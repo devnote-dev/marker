@@ -101,4 +101,150 @@ describe Marker::Parser do
       node.value.should eq "foo  "
     end
   end
+
+  context "parses fenced code blocks:" do
+    it "example 119" do
+      nodes = parse <<-MD
+        ```
+        <
+         >
+        ```
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Backtick
+      node.value.should eq "\n<\n >\n"
+    end
+
+    it "example 120" do
+      nodes = parse <<-MD
+        ~~~
+        <
+         >
+        ~~~
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Tilde
+      node.value.should eq "\n<\n >\n"
+    end
+
+    it "example 122" do
+      nodes = parse <<-MD
+        ```
+        aaa
+        ~~~
+        ```
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Backtick
+      node.value.should eq "\naaa\n~~~\n"
+    end
+
+    it "example 123" do
+      nodes = parse <<-MD
+        ~~~
+        aaa
+        ```
+        ~~~
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Tilde
+      node.value.should eq "\naaa\n```\n"
+    end
+
+    pending "example 124" do
+      nodes = parse <<-MD
+        ````
+        aaa
+        ```
+        ``````
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Backtick
+      node.value.should eq "\naaa\n```\n"
+    end
+
+    it "example 125" do
+      nodes = parse <<-MD
+        ~~~~
+        aaa
+        ~~~
+        ~~~~
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Tilde
+      node.value.should eq "\naaa\n~~~\n"
+    end
+
+    it "example 126" do
+      nodes = parse "```"
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Backtick
+      node.value.should be_empty
+    end
+
+    it "example 127" do
+      nodes = parse <<-MD
+        `````
+
+        ```
+        aaa
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Backtick
+      node.value.should eq "\n\n```\naaa"
+    end
+
+    # TODO: needs confirmation
+    it "example 129" do
+      nodes = parse <<-MD
+        ```
+
+          
+        ```
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Backtick
+      node.value.should eq "\n\n  \n"
+    end
+
+    it "example 130" do
+      nodes = parse <<-MD
+        ```
+        ```
+        MD
+
+      nodes.size.should eq 1
+      node = nodes[0].should be_a Marker::CodeBlock
+
+      node.kind.should eq Marker::CodeBlock::Kind::Backtick
+      node.value.should eq "\n"
+    end
+  end
 end
