@@ -12,3 +12,7 @@ def assert_tokens(source : String, *kinds : Kind) : Nil
     token.kind.should eq kinds[index]
   end
 end
+
+def parse(source : String) : Array(Marker::Block)
+  Marker::Parser.parse lex source
+end
