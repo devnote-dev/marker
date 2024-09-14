@@ -1,4 +1,4 @@
-require "../spec_helper"
+require "../../spec_helper"
 
 describe Marker::Parser do
   context "parses thematic breaks:" do

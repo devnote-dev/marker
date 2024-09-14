@@ -1,7 +1,7 @@
-require "../spec_helper"
+require "../../spec_helper"
 
 describe Marker::Parser do
-  context "parses inlines - code spans:" do
+  context "parses code spans:" do
     it "example 327" do
       nodes = parse "`hi`lo"
 
