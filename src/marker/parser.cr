@@ -294,12 +294,37 @@ module Marker
         when .space?, .text?
           values << Text.new current_token.value
           next_token
+        when .code_span?
+          values << parse_code_span
         else
           raise "inline not implemented (on #{current_token.kind})"
         end
       end
 
       values
+    end
+
+    private def parse_code_span : Inline
+      value = current_token.value.gsub '\n', ' '
+      next_token
+
+      if value.starts_with? "``"
+        value = value[2...-2]
+      else
+        value = value.strip '`'
+      end
+
+      unless value.blank?
+        if value.starts_with?(' ') && value.ends_with?(' ')
+          if value.starts_with?("  ") && value.ends_with?("  ")
+            value = ' ' + value.strip + ' '
+          else
+            value = value.strip
+          end
+        end
+      end
+
+      CodeSpan.new value
     end
   end
 end
