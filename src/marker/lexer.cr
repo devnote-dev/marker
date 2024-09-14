@@ -321,7 +321,7 @@ module Marker
     private def lex_text : Token
       start = current_pos
 
-      until current_char.in?('\0', '\r', '\n', '\\', '`', '~', '<', '*', '_', '[', '!')
+      until current_char.in?('\0', '\r', '\n', '\\', '`', '~', '<', '*', '_', '[', ']', '!')
         next_char
       end
 
