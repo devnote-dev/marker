@@ -155,8 +155,9 @@ module Marker
         next_char
         Token.new :right_angle, location, ">"
       when '"', '\''
+        value = current_char.to_s
         next_char
-        Token.new :quote, location, current_char.to_s
+        Token.new :quote, location, value
       when ':'
         next_char
         Token.new :colon, location, ":"
@@ -321,7 +322,7 @@ module Marker
     private def lex_text : Token
       start = current_pos
 
-      until current_char.in?('\0', '\r', '\n', '\\', '`', '~', '<', '*', '_', '[', ']', '!')
+      until current_char.in?('\0', '\r', '\n', '\\', '`', '~', '<', '*', '_', '[', ']', '"', '\'', '!')
         next_char
       end
 
