@@ -48,12 +48,12 @@ module Marker
       when .eof?
         nil
       when .space?
-        unless current_token.value.size > 3
+        if current_token.value.size > 3
+          parse_indented_code_block
+        else
           next_token
-          return parse_leaf_block
+          parse_leaf_block
         end
-
-        parse_indented_code_block
       when .newline?
         next_token
         parse_leaf_block
@@ -66,7 +66,7 @@ module Marker
       when .left_bracket?
         parse_link_reference
       else
-        raise "leaf not implemented (on #{current_token.kind})"
+        parse_paragraph
       end
     end
 
@@ -257,6 +257,29 @@ module Marker
       else
         Paragraph.new values << Text.new title
       end
+    end
+
+    private def parse_paragraph : Block
+      values = [] of Inline
+      last_is_newline = false
+
+      loop do
+        case current_token.kind
+        when .eof?
+          break
+        when .space?
+          next_token
+        when .newline?
+          break if last_is_newline || current_token.value.size > 1
+          last_is_newline = true
+          next_token
+        else
+          values.concat parse_inlines
+          last_is_newline = false
+        end
+      end
+
+      Paragraph.new values
     end
 
     private def parse_inlines(*, until token_kind : Token::Kind = :newline) : Array(Inline)
