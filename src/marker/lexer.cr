@@ -43,10 +43,14 @@ module Marker
         lex_atx_heading
       when '='
         start = current_pos
-        if next_char == '=' && next_char == '='
-          lex_setext_heading start
+        if next_char == '='
+          if next_char == '='
+            lex_setext_heading start
+          else
+            prev_char
+            Token.new :equal, location, "="
+          end
         else
-          rewind start + 1
           Token.new :equal, location, "="
         end
       when '`'
@@ -55,7 +59,6 @@ module Marker
           if next_char == '`'
             lex_fence_block start
           else
-            rewind
             lex_code_span start, 2
           end
         else
@@ -63,10 +66,14 @@ module Marker
         end
       when '~'
         start = current_pos
-        if next_char == '~' && next_char == '~'
-          lex_fence_block start
+        if next_char == '~'
+          if next_char == '~'
+            lex_fence_block start
+          else
+            prev_char
+            Token.new :tilde, location, "~"
+          end
         else
-          rewind start + 1
           Token.new :tilde, location, "~"
         end
       when '<'
@@ -76,7 +83,7 @@ module Marker
               next_char
               Token.new :html_open_comment, location, "<!--"
             else
-              rewind current_pos - 1
+              prev_char
               Token.new :text, location, "<!-"
             end
           else
@@ -95,11 +102,10 @@ module Marker
             next_char
             Token.new :html_close_comment, location, "-->"
           else
-            rewind start + 1
+            prev_char
             Token.new :list_item, location, "-"
           end
         else
-          rewind start + 1
           Token.new :list_item, location, "-"
         end
       when '/'
@@ -115,11 +121,10 @@ module Marker
           if next_char == '*'
             lex_thematic_break start
           else
-            rewind start + 1
+            prev_char
             Token.new :asterisk, location, "*"
           end
         else
-          rewind start + 1
           Token.new :asterisk, location, "*"
         end
       when '.'
@@ -131,11 +136,10 @@ module Marker
           if next_char == '_'
             lex_thematic_break start
           else
-            rewind start + 1
+            prev_char
             Token.new :underscore, location, "_"
           end
         else
-          rewind start + 1
           Token.new :underscore, location, "_"
         end
       when '['
@@ -177,13 +181,13 @@ module Marker
       @reader.next_char
     end
 
-    private def current_pos : Int32
-      @reader.pos
+    private def prev_char : Nil
+      @column -= 1
+      @reader.pos -= 1
     end
 
-    private def rewind(pos : Int32 = 1) : Nil
-      @column -= pos
-      @reader.pos -= pos
+    private def current_pos : Int32
+      @reader.pos
     end
 
     private def location : Location
