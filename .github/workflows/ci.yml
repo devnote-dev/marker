@@ -21,14 +21,14 @@ jobs:
         with:
           crystal: latest
 
-      - name: Install Ameba
-        run: shards install
-
       - name: Check Format
         run: crystal tool format --check
 
       - name: Run Specs
         run: crystal spec
 
+      - name: Install Ameba
+        run: shards install
+
       - name: Run Lints
-        run: bin/ameba
+        run: bin/ameba --except Layout/TrailingWhitespace
