@@ -59,7 +59,6 @@ module Marker
             lex_code_span start, 2
           end
         else
-          rewind
           lex_code_span start, 1
         end
       when '~'
@@ -184,7 +183,7 @@ module Marker
 
     private def rewind(pos : Int32 = 1) : Nil
       @column -= pos
-      @reader.pos = pos
+      @reader.pos -= pos
     end
 
     private def location : Location
@@ -298,15 +297,26 @@ module Marker
         when '\0'
           break
         when '`'
-          if level == 1 || next_char == '`'
-            break next_char
+          if level == 1
+            break unless next_char == '`'
           end
+
+          if level == 2 && next_char == '`'
+            break unless next_char == '`'
+          end
+
+          next_char
         else
           next_char
         end
       end
 
-      Token.new :code_span, location, read_string_from start
+      value = read_string_from start
+      if value == "`" && level == 1
+        Token.new :text, location, value
+      else
+        Token.new :code_span, location, value
+      end
     end
 
     private def lex_thematic_break(start : Int32) : Token
