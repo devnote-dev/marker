@@ -63,7 +63,7 @@ module Marker
   # end
 
   class LinkReference < Leaf
-    property label : String
+    property label : Array(Inline)
     property destination : String
     property title : String?
 

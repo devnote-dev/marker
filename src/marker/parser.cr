@@ -63,6 +63,8 @@ module Marker
         parse_atx_heading
       when .fence_block?
         parse_fenced_code_block
+      when .left_bracket?
+        parse_link_reference
       else
         raise "leaf not implemented (on #{current_token.kind})"
       end
@@ -173,12 +175,98 @@ module Marker
       CodeBlock.new kind, value
     end
 
-    private def parse_inlines : Array(Inline)
+    private def parse_link_reference : Block
+      next_token
+      values = parse_inlines until: :right_bracket
+
+      unless current_token.kind.right_bracket?
+        values.unshift Text.new "["
+        return Paragraph.new values
+      end
+
+      unless next_token.kind.colon?
+        # not sure how this resolves
+        raise "not implemented: unreferenced link"
+      end
+
+      if next_token.kind.space?
+        next_token
+      end
+
+      if current_token.kind.eof?
+        values << Text.new ":"
+        return Paragraph.new values
+      end
+
+      dest = String.build do |io|
+        loop do
+          case current_token.kind
+          when .eof?, .space?, .newline?
+            break
+          when .text?
+            io << current_token.value
+            break if current_token.value.ends_with? ' '
+            next_token
+          else
+            io << current_token.value
+            next_token
+          end
+        end
+      end.strip
+
+      if current_token.kind.eof?
+        return LinkReference.new values, dest
+      else
+        next_token
+      end
+
+      if current_token.kind.newline? || !current_token.kind.quote?
+        return LinkReference.new values, dest
+      end
+
+      quote = current_token.value
+      closed = false
+      title = String.build do |io|
+        last_is_newline = false
+
+        loop do
+          case next_token.kind
+          when .eof?
+            break
+          when .newline?
+            break if last_is_newline
+            last_is_newline = true
+          when .quote?
+            if current_token.value == quote
+              next_token
+              closed = true
+              break
+            else
+              io << current_token.value
+              last_is_newline = false
+            end
+          else
+            io << current_token.value
+            last_is_newline = false
+          end
+        end
+      end
+
+      if closed
+        LinkReference.new values, dest, title
+      else
+        Paragraph.new values << Text.new title
+      end
+    end
+
+    private def parse_inlines(*, until token_kind : Token::Kind = :newline) : Array(Inline)
       values = [] of Inline
 
       loop do
         case current_token.kind
         when .eof?, .newline?
+          break
+        when token_kind
           break
         when .space?, .text?
           values << Text.new current_token.value
