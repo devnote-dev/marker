@@ -291,11 +291,19 @@ module Marker
           break
         when token_kind
           break
-        when .space?, .text?
+        when .space?, .text?, .quote?
           values << Text.new current_token.value
           next_token
         when .code_span?
           values << parse_code_span
+        when .asterisk?, .underscore?
+          last_is_space = values.last?.as?(Text).try(&.value.ends_with?(' '))
+          case value = parse_emphasis_or_strong(last_is_space || false)
+          when Array
+            values.concat value
+          else
+            values << value
+          end
         else
           raise "inline not implemented (on #{current_token.kind})"
         end
@@ -325,6 +333,46 @@ module Marker
       end
 
       CodeSpan.new value
+    end
+
+    private def parse_emphasis_or_strong(last_is_space : Bool) : Inline | Array(Inline)
+      kind = current_token.kind
+      value = current_token.value
+      values = [] of Inline
+      token = next_token
+
+      if token.kind.space?
+        return Text.new value
+      end
+
+      unless last_is_space
+        unless token.kind.text? && token.value[0].alphanumeric? # && token.kind.underscore?
+          return Text.new value
+        end
+      end
+
+      loop do
+        case current_token.kind
+        when .eof?, .newline?
+          values.unshift Text.new value
+          return values
+        when kind
+          if text = values[-1].as?(Text)
+            if text.value.ends_with? ' '
+              values << Text.new value
+              next_token
+              next
+            end
+          end
+
+          next_token
+          break
+        else
+          values.concat parse_inlines until: kind
+        end
+      end
+
+      Emphasis.new values
     end
   end
 end

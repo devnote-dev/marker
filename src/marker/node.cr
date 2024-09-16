@@ -86,14 +86,14 @@ module Marker
   end
 
   class Emphasis < Inline
-    property value : String
+    property value : Array(Inline)
 
     def initialize(@value)
     end
   end
 
   class Strong < Inline
-    property value : String
+    property value : Array(Inline)
 
     def initialize(@value)
     end
