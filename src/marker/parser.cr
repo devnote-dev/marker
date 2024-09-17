@@ -271,6 +271,7 @@ module Marker
           next_token
         when .newline?
           break if last_is_newline || current_token.value.size > 1
+          values << Text.new "\n"
           last_is_newline = true
           next_token
         else
@@ -278,6 +279,14 @@ module Marker
           last_is_newline = false
         end
       end
+
+      values = values.chunks(&.class).flat_map do |(_, nodes)|
+        if nodes[0].is_a?(Text)
+          Text.new nodes.join &.as(Text).value
+        else
+          nodes
+        end
+      end.reject! { |n| n.as?(Text).try &.value == "\n" }
 
       Paragraph.new values
     end
