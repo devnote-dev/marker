@@ -162,19 +162,13 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 3
+      node.values.size.should eq 2
       code = node.values[0].should be_a Marker::CodeSpan
-
-      # This might be a bug, "bar" and "`" are read separately
-      # but should be joined together in parsing
 
       code.value.should eq "foo\\"
       code = node.values[1].should be_a Marker::Text
 
-      code.value.should eq "bar"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq "`"
+      code.value.should eq "bar`"
     end
   end
 end

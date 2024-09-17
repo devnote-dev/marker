@@ -36,22 +36,16 @@ describe Marker::Parser do
       nodes.size.should eq 2
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 2
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "aaa"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "bbb"
+      text.value.should eq "aaa\nbbb"
       node = nodes[1].should be_a Marker::Paragraph
 
-      node.values.size.should eq 2
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "ccc"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "ddd"
+      text.value.should eq "ccc\nddd"
     end
 
     it "example 221" do
@@ -86,13 +80,10 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 2
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "aaa"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "bbb"
+      text.value.should eq "aaa\nbbb"
     end
 
     it "example 223" do
@@ -105,16 +96,10 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 3
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "aaa"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "bbb"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq "ccc"
+      text.value.should eq "aaa\nbbb\nccc"
     end
   end
 end

@@ -23,19 +23,10 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 4
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "a "
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "*"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq " "
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "foo bar"
+      text.value.should eq "a * foo bar"
     end
 
     it "example 352" do
@@ -44,22 +35,10 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 5
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "a"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "*"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq %(")
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "foo"
-      text = node.values[4].should be_a Marker::Text
-
-      text.value.should eq %(")
+      text.value.should eq %(a*"foo")
     end
 
     it "example 353" do
@@ -68,19 +47,10 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 4
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "*"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq " "
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq "a "
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "*"
+      text.value.should eq "* a *"
     end
 
     it "example 354" do
@@ -95,49 +65,22 @@ describe Marker::Parser do
       nodes.size.should eq 3
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 4
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "*"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "$"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq "*"
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "alpha."
+      text.value.should eq "*$*alpha."
       node = nodes[1].should be_a Marker::Paragraph
 
-      node.values.size.should eq 4
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "*"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "£"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq "*"
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "bravo."
+      text.value.should eq "*£*bravo."
       node = nodes[2].should be_a Marker::Paragraph
 
-      node.values.size.should eq 4
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "*"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "€"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq "*"
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "charlie."
+      text.value.should eq "*€*charlie."
     end
 
     it "example 355" do
@@ -200,19 +143,10 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 4
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "_"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq " "
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq "foo bar"
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "_"
+      text.value.should eq "_ foo bar_"
     end
 
     it "example 359" do
@@ -221,25 +155,10 @@ describe Marker::Parser do
       nodes.size.should eq 1
       node = nodes[0].should be_a Marker::Paragraph
 
-      node.values.size.should eq 6
+      node.values.size.should eq 1
       text = node.values[0].should be_a Marker::Text
 
-      text.value.should eq "a"
-      text = node.values[1].should be_a Marker::Text
-
-      text.value.should eq "_"
-      text = node.values[2].should be_a Marker::Text
-
-      text.value.should eq %(")
-      text = node.values[3].should be_a Marker::Text
-
-      text.value.should eq "foo"
-      text = node.values[4].should be_a Marker::Text
-
-      text.value.should eq %(")
-      text = node.values[5].should be_a Marker::Text
-
-      text.value.should eq "_"
+      text.value.should eq %(a_"foo"_)
     end
 
     pending "example 360" do
