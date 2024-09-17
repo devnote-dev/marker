@@ -300,14 +300,16 @@ module Marker
           break
         when token_kind
           break
-        when .space?, .text?, .quote?
+        when .space?, .text?, .quote?, .left_paren?, .right_paren?
           values << Text.new current_token.value
           next_token
         when .code_span?
           values << parse_code_span
         when .asterisk?, .underscore?
-          last_is_space = values.last?.as?(Text).try(&.value.ends_with?(' '))
-          case value = parse_emphasis_or_strong(last_is_space || false)
+          last_is_punct = values.last?.as?(Text).try &.value[-1].alphanumeric?.!
+          last_is_punct = true if last_is_punct.nil?
+
+          case value = parse_emphasis_or_strong last_is_punct
           when Array
             values.concat value
           else
@@ -344,7 +346,7 @@ module Marker
       CodeSpan.new value
     end
 
-    private def parse_emphasis_or_strong(last_is_space : Bool) : Inline | Array(Inline)
+    private def parse_emphasis_or_strong(last_is_punct : Bool) : Inline | Array(Inline)
       kind = current_token.kind
       value = current_token.value
       values = [] of Inline
@@ -354,8 +356,12 @@ module Marker
         return Text.new value
       end
 
-      unless last_is_space
-        unless token.kind.text? && token.value[0].alphanumeric? # && token.kind.underscore?
+      if kind.asterisk?
+        unless token.kind.text? && token.value[0].alphanumeric?
+          return Text.new value
+        end
+      else
+        unless last_is_punct
           return Text.new value
         end
       end
